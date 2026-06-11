@@ -2,7 +2,7 @@ export default function Sidebar({ page, setPage, markets }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <span className="logo-icon">W</span>
+        <span className="logo-icon">🌊</span>
         <span className="logo-text">WaveX</span>
       </div>
 
@@ -13,7 +13,7 @@ export default function Sidebar({ page, setPage, markets }) {
           className={`nav-item ${page === "home" ? "active" : ""}`}
           onClick={() => setPage("home")}
         >
-          <span className="nav-icon">🏠</span>
+          <span className="nav-icon">�</span>
           Home
         </button>
         {markets.map((market) => (
@@ -23,19 +23,21 @@ export default function Sidebar({ page, setPage, markets }) {
             className={`nav-item ${page === market.id ? "active" : ""}`}
             onClick={() => setPage(market.id)}
           >
-            <span className="nav-icon">{market.accent}</span>
+            <span className="nav-icon">
+              {market.accent.startsWith("/") ? (
+                <img
+                  src={market.accent}
+                  alt={market.title}
+                  className="nav-icon-image"
+                />
+              ) : (
+                market.accent
+              )}
+            </span>
             {market.title}
           </button>
         ))}
       </nav>
-
-      <div className="sidebar-footer">
-        <p className="footer-title">WaveX insights</p>
-        <p className="footer-text">
-          Clean market charts with Elliott Wave analysis for today’s top
-          instruments.
-        </p>
-      </div>
 
       <style>{`
         .sidebar {
@@ -54,12 +56,12 @@ export default function Sidebar({ page, setPage, markets }) {
         .sidebar-logo {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 0.75rem 1rem 1.5rem;
+          gap: 1rem;
+          padding: 1.25rem 1rem 1.75rem;
         }
         .logo-icon {
-          width: 34px;
-          height: 34px;
+          width: 2.2rem;
+          height: 2.2rem;
           background: #1a1a1a;
           color: white;
           border-radius: 10px;
@@ -67,10 +69,10 @@ export default function Sidebar({ page, setPage, markets }) {
           align-items: center;
           justify-content: center;
           font-weight: 700;
-          font-size: 16px;
+          font-size: 1.1rem;
         }
         .logo-text {
-          font-size: 15px;
+          font-size: 1.15rem;
           font-weight: 700;
           color: var(--text);
         }
@@ -79,28 +81,28 @@ export default function Sidebar({ page, setPage, markets }) {
           padding: 0 0.75rem;
         }
         .nav-label {
-          font-size: 11px;
-          font-weight: 600;
+          font-size: 0.85rem;
+          font-weight: 700;
           color: var(--text-muted);
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          margin-bottom: 0.75rem;
+          margin-bottom: 1rem;
         }
         .nav-item {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 1rem;
           width: 100%;
-          padding: 12px 14px;
+          padding: 1rem 1.1rem;
           border: none;
           background: transparent;
           border-radius: 12px;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 1.05rem;
           color: var(--text-muted);
           text-align: left;
           transition: all 0.18s ease;
-          margin-bottom: 6px;
+          margin-bottom: 0.5rem;
         }
         .nav-item:hover {
           background: var(--bg);
@@ -114,30 +116,19 @@ export default function Sidebar({ page, setPage, markets }) {
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
         }
         .nav-icon {
-          width: 28px;
-          height: 28px;
+          width: 2.4rem;
+          height: 2.4rem;
           display: grid;
           place-items: center;
-          border-radius: 8px;
-          background: rgba(255, 255, 255, 0.8);
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.85);
           color: #1a1a1a;
-          font-size: 13px;
+          font-size: 1rem;
         }
-        .sidebar-footer {
-          padding: 1rem 1rem 1.25rem;
-          border-top: 1px solid var(--border);
-        }
-        .footer-title {
-          font-size: 12px;
-          font-weight: 700;
-          margin-bottom: 4px;
-          color: var(--text);
-        }
-        .footer-text {
-          font-size: 12px;
-          color: var(--text-muted);
-          line-height: 1.5;
-          margin: 0;
+        .nav-icon-image {
+          width: 1.25rem;
+          height: 1.25rem;
+          object-fit: contain;
         }
       `}</style>
     </aside>

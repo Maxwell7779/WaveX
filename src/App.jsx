@@ -10,28 +10,28 @@ const markets = [
     symbol: "XAU/USD",
     title: "Gold",
     subtitle: "Precious metal",
-    accent: "Au",
+    accent: "/gold.png",
   },
   {
     id: "btc",
     symbol: "BTC/USD",
     title: "Bitcoin",
     subtitle: "Crypto",
-    accent: "₿",
+    accent: "/btc.png",
   },
   {
     id: "eth",
     symbol: "ETH/USD",
     title: "Ethereum",
     subtitle: "Crypto",
-    accent: "Ξ",
+    accent: "/eth.png",
   },
   {
     id: "oil",
     symbol: "WTI",
     title: "Crude Oil",
     subtitle: "Energy commodity",
-    accent: "🛢",
+    accent: "/oil.png",
   },
 ];
 

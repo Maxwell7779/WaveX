@@ -227,12 +227,21 @@ export default function Chart({ symbol, title }) {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 1rem;
+          margin-bottom: 2rem;
           flex-wrap: wrap;
-          gap: 0.75rem;
+          gap: 1rem;
         }
-        .chart-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 2px; }
-        .chart-symbol { font-size: 14px; color: var(--text-muted); }
+        .chart-title {
+          font-family: var(--font-serif);
+          font-size: 2.4rem;
+          line-height: 1.15;
+          font-weight: 700;
+          margin-bottom: 0.35rem;
+        }
+        .chart-symbol {
+          font-size: 0.95rem;
+          color: var(--text-muted);
+        }
         .chart-actions {
           display: flex;
           align-items: center;
@@ -242,19 +251,19 @@ export default function Chart({ symbol, title }) {
         .interval-select {
           display: inline-flex;
           flex-direction: column;
-          gap: 0.3rem;
-          font-size: 12px;
+          gap: 0.75rem;
+          font-size: 0.95rem;
           color: var(--text-muted);
         }
         .interval-select label { font-weight: 600; }
         .interval-select select {
-          min-width: 100px;
-          padding: 0.55rem 0.75rem;
+          min-width: 110px;
+          padding: 0.75rem 0.9rem;
           border: 1px solid var(--border);
           border-radius: 12px;
           background: white;
           color: var(--text);
-          font-size: 14px;
+          font-size: 0.95rem;
           outline: none;
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
@@ -263,8 +272,8 @@ export default function Chart({ symbol, title }) {
           box-shadow: 0 0 0 4px rgba(228, 226, 217, 0.45);
         }
         .chart-price { text-align: right; }
-        .price-value { font-size: 1.6rem; font-weight: 700; display: block; }
-        .price-change { font-size: 14px; font-weight: 500; }
+        .price-value { font-size: 2rem; font-weight: 700; display: block; }
+        .price-change { font-size: 1rem; font-weight: 500; }
         .price-change.up { color: #16a34a; }
         .price-change.down { color: #dc2626; }
         .chart-container {
@@ -281,30 +290,44 @@ export default function Chart({ symbol, title }) {
           justify-content: center;
           background: rgba(255, 255, 255, 0.92);
           color: var(--text-muted);
-          font-size: 14px;
-          padding: 1rem;
+          font-size: 1rem;
+          padding: 1.25rem;
           text-align: center;
           z-index: 1;
         }
         .wave-panel {
-          margin-top: 1rem;
-          padding: 1.1rem 1.25rem;
+          margin-top: 2rem;
+          padding: 2rem;
           border: 1px solid var(--border);
           border-radius: 12px;
           background: var(--bg-secondary);
         }
-        .wave-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-        .wave-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .wave-title {
+          font-size: 1rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          color: var(--text);
+        }
+        .wave-badges {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+        }
         .wave-badge {
-          padding: 4px 14px;
+          padding: 0.4rem 0.9rem;
           border-radius: 999px;
-          font-size: 13px;
+          font-size: 0.95rem;
           font-weight: 500;
         }
         .wave-impulse { background: #f0fdf4; color: #166534; }
         .wave-corrective { background: #fff7ed; color: #9a3412; }
         .wave-current { background: #1a1a1a; color: white; }
-        .wave-desc { font-size: 13px; color: var(--text-muted); margin: 0; }
+        .wave-desc {
+          font-size: 0.95rem;
+          color: var(--text-muted);
+          margin: 0;
+        }
         .wave-desc strong { color: var(--text); }
       `}</style>
     </div>
