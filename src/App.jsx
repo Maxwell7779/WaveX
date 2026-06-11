@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Sidebar from "./Components/Sidebar";
-import Home from "./Components/Home";
-import Chart from "./Components/Chart";
+import Sidebar from "./components/Sidebar";
+import Home from "./components/Home";
+import Chart from "./components/Chart";
 import "./App.css";
 
 const markets = [
