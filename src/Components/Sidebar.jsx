@@ -1,4 +1,4 @@
-export default function Sidebar({ page, setPage }) {
+export default function Sidebar({ page, setPage, markets }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -9,59 +9,32 @@ export default function Sidebar({ page, setPage }) {
       <nav className="sidebar-nav">
         <p className="nav-label">Markets</p>
         <button
+          type="button"
           className={`nav-item ${page === "home" ? "active" : ""}`}
           onClick={() => setPage("home")}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            <polyline points="9,22 9,12 15,12 15,22" />
-          </svg>
+          <span className="nav-icon">🏠</span>
           Home
         </button>
-        <button
-          className={`nav-item ${page === "gold" ? "active" : ""}`}
-          onClick={() => setPage("gold")}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+        {markets.map((market) => (
+          <button
+            type="button"
+            key={market.id}
+            className={`nav-item ${page === market.id ? "active" : ""}`}
+            onClick={() => setPage(market.id)}
           >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v6l4 2" />
-          </svg>
-          Gold (XAU/USD)
-        </button>
-        <button
-          className={`nav-item ${page === "btc" ? "active" : ""}`}
-          onClick={() => setPage("btc")}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-          Bitcoin (BTC/USD)
-        </button>
+            <span className="nav-icon">{market.accent}</span>
+            {market.title}
+          </button>
+        ))}
       </nav>
 
       <div className="sidebar-footer">
-        <p className="footer-text">WaveX · Elliott Wave Analysis</p>
+        <p className="footer-title">WaveX insights</p>
+        <p className="footer-text">
+          Clean market charts with Elliott Wave analysis for today’s top
+          instruments.
+        </p>
       </div>
 
       <style>{`
@@ -69,80 +42,102 @@ export default function Sidebar({ page, setPage }) {
           width: var(--sidebar-width);
           min-width: var(--sidebar-width);
           height: 100vh;
+          position: sticky;
+          top: 0;
           background: var(--bg-secondary);
           border-right: 1px solid var(--border);
           display: flex;
           flex-direction: column;
           padding: 1rem 0;
+          overflow-y: auto;
         }
         .sidebar-logo {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 0.5rem 1rem 1.5rem;
+          padding: 0.75rem 1rem 1.5rem;
         }
         .logo-icon {
-          width: 28px;
-          height: 28px;
+          width: 34px;
+          height: 34px;
           background: #1a1a1a;
           color: white;
-          border-radius: 6px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 700;
-          font-size: 14px;
+          font-size: 16px;
         }
         .logo-text {
           font-size: 15px;
-          font-weight: 600;
+          font-weight: 700;
           color: var(--text);
         }
         .sidebar-nav {
           flex: 1;
-          padding: 0 0.5rem;
+          padding: 0 0.75rem;
         }
         .nav-label {
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--text-muted);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          padding: 0 0.75rem;
-          margin-bottom: 4px;
+          letter-spacing: 0.08em;
+          margin-bottom: 0.75rem;
         }
         .nav-item {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           width: 100%;
-          padding: 8px 12px;
+          padding: 12px 14px;
           border: none;
           background: transparent;
-          border-radius: 6px;
+          border-radius: 12px;
           cursor: pointer;
           font-size: 14px;
           color: var(--text-muted);
           text-align: left;
-          transition: all 0.15s;
-          margin-bottom: 2px;
+          transition: all 0.18s ease;
+          margin-bottom: 6px;
         }
         .nav-item:hover {
-          background: var(--bg-hover);
+          background: var(--bg);
           color: var(--text);
+          transform: translateX(2px);
         }
         .nav-item.active {
-          background: var(--bg-hover);
+          background: white;
           color: var(--text);
-          font-weight: 500;
+          font-weight: 600;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+        .nav-icon {
+          width: 28px;
+          height: 28px;
+          display: grid;
+          place-items: center;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.8);
+          color: #1a1a1a;
+          font-size: 13px;
         }
         .sidebar-footer {
-          padding: 1rem;
+          padding: 1rem 1rem 1.25rem;
           border-top: 1px solid var(--border);
         }
+        .footer-title {
+          font-size: 12px;
+          font-weight: 700;
+          margin-bottom: 4px;
+          color: var(--text);
+        }
         .footer-text {
-          font-size: 11px;
+          font-size: 12px;
           color: var(--text-muted);
+          line-height: 1.5;
+          margin: 0;
         }
       `}</style>
     </aside>

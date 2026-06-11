@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { createChart } from "lightweight-charts";
+import { createChart, CandlestickSeries } from "lightweight-charts";
 
 const API_KEY = import.meta.env.VITE_TWELVE_DATA_API_KEY;
+
+const TIMEFRAMES = [
+  { label: "1H", value: "1h" },
+  { label: "4H", value: "4h" },
+  { label: "1D", value: "1day" },
+  { label: "1W", value: "1week" },
+  { label: "1M", value: "1month" },
+];
 
 function detectElliottWaves(candles) {
   if (candles.length < 10) return [];
@@ -51,12 +59,17 @@ export default function Chart({ symbol, title }) {
   const [loading, setLoading] = useState(true);
   const [price, setPrice] = useState(null);
   const [change, setChange] = useState(null);
+  const [interval, setInterval] = useState("1h");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!chartRef.current) return;
-    chartInstance.current = createChart(chartRef.current, {
+
+    const chartHeight = Math.floor(window.innerHeight * 0.62);
+
+    const chart = createChart(chartRef.current, {
       width: chartRef.current.clientWidth,
-      height: 420,
+      height: chartHeight,
       layout: { background: { color: "#ffffff" }, textColor: "#555" },
       grid: {
         vertLines: { color: "#f4f3f0" },
@@ -67,7 +80,8 @@ export default function Chart({ symbol, title }) {
       timeScale: { borderColor: "#e8e7e3", timeVisible: true },
     });
 
-    seriesRef.current = chartInstance.current.addCandlestickSeries({
+    chartInstance.current = chart;
+    seriesRef.current = chart.addSeries(CandlestickSeries, {
       upColor: "#16a34a",
       downColor: "#dc2626",
       borderVisible: false,
@@ -92,12 +106,17 @@ export default function Chart({ symbol, title }) {
   useEffect(() => {
     if (!seriesRef.current) return;
     setLoading(true);
+    setError(null);
+
     fetch(
-      `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1h&outputsize=100&apikey=${API_KEY}`,
+      `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${interval}&outputsize=100&apikey=${API_KEY}`,
     )
       .then((r) => r.json())
       .then((data) => {
-        if (!data.values) return;
+        if (!data || data.status === "error" || !data.values) {
+          throw new Error(data?.message || "No chart data available");
+        }
+
         const candles = data.values.reverse().map((d) => ({
           time: Math.floor(new Date(d.datetime).getTime() / 1000),
           open: parseFloat(d.open),
@@ -105,55 +124,87 @@ export default function Chart({ symbol, title }) {
           low: parseFloat(d.low),
           close: parseFloat(d.close),
         }));
+
+        if (candles.length < 2) {
+          throw new Error("Not enough candle data to render chart.");
+        }
+
         seriesRef.current.setData(candles);
         const last = candles[candles.length - 1];
         const prev = candles[candles.length - 2];
         setPrice(last.close);
         setChange((((last.close - prev.close) / prev.close) * 100).toFixed(2));
         setWaves(detectElliottWaves(candles));
-        setLoading(false);
-        chartInstance.current.timeScale().fitContent();
+        chartInstance.current?.timeScale().fitContent();
       })
-      .catch(() => setLoading(false));
-  }, [symbol]);
+      .catch((err) => {
+        console.error("Chart data error:", err);
+        setError(err.message || "Failed to load chart data.");
+      })
+      .finally(() => setLoading(false));
+  }, [symbol, interval]);
 
   const currentWave = waves[waves.length - 1];
   const isUp = change > 0;
+  const selectedTimeframe =
+    TIMEFRAMES.find((item) => item.value === interval)?.label || "1H";
 
   return (
     <div className="chart-page">
       <div className="chart-header">
         <div>
           <h2 className="chart-title">{title}</h2>
-          <p className="chart-symbol">{symbol} · 1H</p>
+          <p className="chart-symbol">
+            {symbol} · {selectedTimeframe}
+          </p>
         </div>
-        {price && (
-          <div className="chart-price">
-            <span className="price-value">${price.toLocaleString()}</span>
-            <span className={`price-change ${isUp ? "up" : "down"}`}>
-              {isUp ? "+" : ""}
-              {change}%
-            </span>
+        <div className="chart-actions">
+          <div className="interval-select">
+            <label htmlFor="timeframe">Interval</label>
+            <select
+              id="timeframe"
+              value={interval}
+              onChange={(event) => setInterval(event.target.value)}
+            >
+              {TIMEFRAMES.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+          {price && (
+            <div className="chart-price">
+              <span className="price-value">${price.toLocaleString()}</span>
+              <span className={`price-change ${isUp ? "up" : "down"}`}>
+                {isUp ? "+" : ""}
+                {change}%
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {loading ? (
-        <div className="chart-loading">Loading chart data...</div>
-      ) : (
-        <div className="chart-container">
-          <div ref={chartRef} style={{ width: "100%" }} />
-        </div>
-      )}
+      <div className="chart-container">
+        <div ref={chartRef} style={{ width: "100%" }} />
+        {loading && <div className="chart-overlay">Loading chart data...</div>}
+        {!loading && error && <div className="chart-overlay">{error}</div>}
+      </div>
 
-      {waves.length > 0 && !loading && (
+      {waves.length > 0 && !loading && !error && (
         <div className="wave-panel">
           <h3 className="wave-title">Elliott Wave Analysis</h3>
           <div className="wave-badges">
             {waves.map((w, i) => (
               <span
                 key={i}
-                className={`wave-badge ${i === waves.length - 1 ? "wave-current" : i < 5 ? "wave-impulse" : "wave-corrective"}`}
+                className={`wave-badge ${
+                  i === waves.length - 1
+                    ? "wave-current"
+                    : i < 5
+                      ? "wave-impulse"
+                      : "wave-corrective"
+                }`}
               >
                 Wave {w.label}
               </span>
@@ -171,25 +222,89 @@ export default function Chart({ symbol, title }) {
       )}
 
       <style>{`
-        .chart-page { max-width: 900px; width: 100%; }
-        .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .chart-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 2px; }
-        .chart-symbol { font-size: 13px; color: var(--text-muted); }
+        .chart-page { width: 100%; }
+        .chart-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+        .chart-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 2px; }
+        .chart-symbol { font-size: 14px; color: var(--text-muted); }
+        .chart-actions {
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          flex-wrap: wrap;
+        }
+        .interval-select {
+          display: inline-flex;
+          flex-direction: column;
+          gap: 0.3rem;
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+        .interval-select label { font-weight: 600; }
+        .interval-select select {
+          min-width: 100px;
+          padding: 0.55rem 0.75rem;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          background: white;
+          color: var(--text);
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .interval-select select:focus {
+          border-color: #b9b4a8;
+          box-shadow: 0 0 0 4px rgba(228, 226, 217, 0.45);
+        }
         .chart-price { text-align: right; }
-        .price-value { font-size: 1.5rem; font-weight: 600; display: block; }
-        .price-change { font-size: 13px; font-weight: 500; }
+        .price-value { font-size: 1.6rem; font-weight: 700; display: block; }
+        .price-change { font-size: 14px; font-weight: 500; }
         .price-change.up { color: #16a34a; }
         .price-change.down { color: #dc2626; }
-        .chart-loading { height: 420px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; background: var(--bg-secondary); border-radius: 10px; }
-        .chart-container { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-        .wave-panel { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
-        .wave-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
-        .wave-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-        .wave-badge { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+        .chart-container {
+          position: relative;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .chart-overlay {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.92);
+          color: var(--text-muted);
+          font-size: 14px;
+          padding: 1rem;
+          text-align: center;
+          z-index: 1;
+        }
+        .wave-panel {
+          margin-top: 1rem;
+          padding: 1.1rem 1.25rem;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          background: var(--bg-secondary);
+        }
+        .wave-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+        .wave-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .wave-badge {
+          padding: 4px 14px;
+          border-radius: 999px;
+          font-size: 13px;
+          font-weight: 500;
+        }
         .wave-impulse { background: #f0fdf4; color: #166534; }
         .wave-corrective { background: #fff7ed; color: #9a3412; }
         .wave-current { background: #1a1a1a; color: white; }
-        .wave-desc { font-size: 13px; color: var(--text-muted); }
+        .wave-desc { font-size: 13px; color: var(--text-muted); margin: 0; }
         .wave-desc strong { color: var(--text); }
       `}</style>
     </div>
