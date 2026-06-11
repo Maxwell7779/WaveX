@@ -46,8 +46,8 @@ export default function Sidebar({ page, setPage, markets }) {
           height: 100vh;
           position: sticky;
           top: 0;
-          background: var(--bg-secondary);
-          border-right: 1px solid var(--border);
+          background: #d8d5cc;
+          border-right: 1px solid #c5c1b7;
           display: flex;
           flex-direction: column;
           padding: 1rem 0;
