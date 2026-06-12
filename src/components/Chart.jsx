@@ -172,7 +172,8 @@ export default function Chart({ symbol, title }) {
       style={{
         transform: `scale(${pageZoom / 100})`,
         transformOrigin: "top center",
-        width: `${100 / (pageZoom / 100)}%`,
+        width: "100%",
+        margin: "0 auto",
       }}
     >
       <div className="chart-header">
