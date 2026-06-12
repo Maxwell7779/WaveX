@@ -11,11 +11,12 @@ const TIMEFRAMES = [
   { label: "1M", value: "1month" },
 ];
 
-const ZOOM_RANGES = [
-  { label: "Recent 20", value: "20" },
-  { label: "Recent 40", value: "40" },
-  { label: "Recent 60", value: "60" },
-  { label: "All", value: "all" },
+const PAGE_ZOOM_LEVELS = [
+  { label: "100%", value: "100" },
+  { label: "90%", value: "90" },
+  { label: "80%", value: "80" },
+  { label: "75%", value: "75" },
+  { label: "70%", value: "70" },
 ];
 
 function detectElliottWaves(candles) {
@@ -68,24 +69,8 @@ export default function Chart({ symbol, title }) {
   const [price, setPrice] = useState(null);
   const [change, setChange] = useState(null);
   const [interval, setInterval] = useState("1h");
-  const [zoomRange, setZoomRange] = useState("60");
+  const [pageZoom, setPageZoom] = useState("100");
   const [error, setError] = useState(null);
-
-  const applyZoomRange = (candles) => {
-    if (!chartInstance.current || !candles.length) return;
-
-    if (zoomRange === "all") {
-      chartInstance.current.timeScale().fitContent();
-      return;
-    }
-
-    const visibleCount = Math.min(candles.length, parseInt(zoomRange, 10));
-    const fromIndex = Math.max(0, candles.length - visibleCount);
-    chartInstance.current.timeScale().setVisibleRange({
-      from: candles[fromIndex].time,
-      to: candles[candles.length - 1].time,
-    });
-  };
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -168,7 +153,6 @@ export default function Chart({ symbol, title }) {
         setChange((((last.close - prev.close) / prev.close) * 100).toFixed(2));
         setWaves(detectElliottWaves(candles));
         candlesRef.current = candles;
-        applyZoomRange(candles);
       })
       .catch((err) => {
         console.error("Chart data error:", err);
@@ -177,17 +161,20 @@ export default function Chart({ symbol, title }) {
       .finally(() => setLoading(false));
   }, [symbol, interval]);
 
-  useEffect(() => {
-    applyZoomRange(candlesRef.current);
-  }, [zoomRange]);
-
   const currentWave = waves[waves.length - 1];
   const isUp = change > 0;
   const selectedTimeframe =
     TIMEFRAMES.find((item) => item.value === interval)?.label || "1H";
 
   return (
-    <div className="chart-page">
+    <div
+      className="chart-page"
+      style={{
+        transform: `scale(${pageZoom / 100})`,
+        transformOrigin: "top center",
+        width: `${100 / (pageZoom / 100)}%`,
+      }}
+    >
       <div className="chart-header">
         <div>
           <h2 className="chart-title">{title}</h2>
@@ -211,13 +198,13 @@ export default function Chart({ symbol, title }) {
             </select>
           </div>
           <div className="zoom-select">
-            <label htmlFor="zoomRange">Zoom range</label>
+            <label htmlFor="pageZoom">Page zoom</label>
             <select
-              id="zoomRange"
-              value={zoomRange}
-              onChange={(event) => setZoomRange(event.target.value)}
+              id="pageZoom"
+              value={pageZoom}
+              onChange={(event) => setPageZoom(event.target.value)}
             >
-              {ZOOM_RANGES.map((range) => (
+              {PAGE_ZOOM_LEVELS.map((range) => (
                 <option key={range.value} value={range.value}>
                   {range.label}
                 </option>
