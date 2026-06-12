@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;500;600;700&display=swap");
 
 :root {
-  --font-sans: "Lato", "Open Sans", sans-serif;
+  --font-sans: "Geist Sans", "Inter", "Segoe UI", sans-serif;
   --font-serif: "Playfair Display", "Lora", serif;
   --sidebar-width: 260px;
   --bg: #ffffff;

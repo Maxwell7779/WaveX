@@ -11,6 +11,13 @@ const TIMEFRAMES = [
   { label: "1M", value: "1month" },
 ];
 
+const ZOOM_RANGES = [
+  { label: "Recent 20", value: "20" },
+  { label: "Recent 40", value: "40" },
+  { label: "Recent 60", value: "60" },
+  { label: "All", value: "all" },
+];
+
 function detectElliottWaves(candles) {
   if (candles.length < 10) return [];
   const waves = [];
@@ -55,12 +62,30 @@ export default function Chart({ symbol, title }) {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const seriesRef = useRef(null);
+  const candlesRef = useRef([]);
   const [waves, setWaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [price, setPrice] = useState(null);
   const [change, setChange] = useState(null);
   const [interval, setInterval] = useState("1h");
+  const [zoomRange, setZoomRange] = useState("60");
   const [error, setError] = useState(null);
+
+  const applyZoomRange = (candles) => {
+    if (!chartInstance.current || !candles.length) return;
+
+    if (zoomRange === "all") {
+      chartInstance.current.timeScale().fitContent();
+      return;
+    }
+
+    const visibleCount = Math.min(candles.length, parseInt(zoomRange, 10));
+    const fromIndex = Math.max(0, candles.length - visibleCount);
+    chartInstance.current.timeScale().setVisibleRange({
+      from: candles[fromIndex].time,
+      to: candles[candles.length - 1].time,
+    });
+  };
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -77,7 +102,14 @@ export default function Chart({ symbol, title }) {
       },
       crosshair: { mode: 1 },
       rightPriceScale: { borderColor: "#e8e7e3" },
-      timeScale: { borderColor: "#e8e7e3", timeVisible: true },
+      timeScale: {
+        borderColor: "#e8e7e3",
+        timeVisible: true,
+        rightOffset: 12,
+        barSpacing: 4,
+        minBarSpacing: 1,
+        fixRightEdge: true,
+      },
     });
 
     chartInstance.current = chart;
@@ -135,7 +167,8 @@ export default function Chart({ symbol, title }) {
         setPrice(last.close);
         setChange((((last.close - prev.close) / prev.close) * 100).toFixed(2));
         setWaves(detectElliottWaves(candles));
-        chartInstance.current?.timeScale().fitContent();
+        candlesRef.current = candles;
+        applyZoomRange(candles);
       })
       .catch((err) => {
         console.error("Chart data error:", err);
@@ -143,6 +176,10 @@ export default function Chart({ symbol, title }) {
       })
       .finally(() => setLoading(false));
   }, [symbol, interval]);
+
+  useEffect(() => {
+    applyZoomRange(candlesRef.current);
+  }, [zoomRange]);
 
   const currentWave = waves[waves.length - 1];
   const isUp = change > 0;
@@ -169,6 +206,20 @@ export default function Chart({ symbol, title }) {
               {TIMEFRAMES.map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="zoom-select">
+            <label htmlFor="zoomRange">Zoom range</label>
+            <select
+              id="zoomRange"
+              value={zoomRange}
+              onChange={(event) => setZoomRange(event.target.value)}
+            >
+              {ZOOM_RANGES.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
                 </option>
               ))}
             </select>
@@ -267,9 +318,29 @@ export default function Chart({ symbol, title }) {
           outline: none;
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .interval-select select:focus {
+        .interval-select select:focus,
+        .zoom-select select:focus {
           border-color: #b9b4a8;
           box-shadow: 0 0 0 4px rgba(228, 226, 217, 0.45);
+        }
+        .zoom-select {
+          display: inline-flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          font-size: 0.95rem;
+          color: var(--text-muted);
+        }
+        .zoom-select label { font-weight: 600; }
+        .zoom-select select {
+          min-width: 130px;
+          padding: 0.75rem 0.9rem;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          background: white;
+          color: var(--text);
+          font-size: 0.95rem;
+          outline: none;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .chart-price { text-align: right; }
         .price-value { font-size: 2rem; font-weight: 700; display: block; }
