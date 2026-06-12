@@ -13,7 +13,7 @@ export default function Sidebar({ page, setPage, markets }) {
           className={`nav-item ${page === "home" ? "active" : ""}`}
           onClick={() => setPage("home")}
         >
-          <span className="nav-icon">�</span>
+          <span className="nav-icon">🌊</span>
           Home
         </button>
         {markets.map((market) => (
